@@ -1,0 +1,115 @@
+ab -n 10000 -c 25 -p payload.json http://localhost:8881/
+This is ApacheBench, Version 2.3 <$Revision: 1843412 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient)
+Completed 1000 requests
+Completed 2000 requests
+Completed 3000 requests
+Completed 4000 requests
+Completed 5000 requests
+Completed 6000 requests
+Completed 7000 requests
+Completed 8000 requests
+Completed 9000 requests
+Completed 10000 requests
+Finished 10000 requests
+
+
+Server Software:        
+Server Hostname:        localhost
+Server Port:            8881
+
+Document Path:          /
+Document Length:        77593 bytes
+
+Concurrency Level:      25
+Time taken for tests:   68.474 seconds
+Complete requests:      10000
+Failed requests:        0
+Total transferred:      776440000 bytes
+Total body sent:        734560000
+HTML transferred:       775930000 bytes
+Requests per second:    146.04 [#/sec] (mean)
+Time per request:       171.185 [ms] (mean)
+Time per request:       6.847 [ms] (mean, across all concurrent requests)
+Transfer rate:          11073.45 [Kbytes/sec] received
+                        10476.16 kb/s sent
+                        21549.61 kb/s total
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0   51 819.2      0   64065
+Processing:     7   30  16.8     24     127
+Waiting:        6   29  16.8     23     125
+Total:          7   81 819.8     25   64121
+
+Percentage of the requests served within a certain time (ms)
+  50%     25
+  66%     31
+  75%     41
+  80%     53
+  90%     59
+  95%     64
+  98%   1028
+  99%   1062
+ 100%  64121 (longest request)
+sleep 2
+ab -n 10000 -c 25 -p payload.json http://localhost:8882/
+This is ApacheBench, Version 2.3 <$Revision: 1843412 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient)
+Completed 1000 requests
+Completed 2000 requests
+Completed 3000 requests
+Completed 4000 requests
+Completed 5000 requests
+Completed 6000 requests
+Completed 7000 requests
+Completed 8000 requests
+Completed 9000 requests
+Completed 10000 requests
+Finished 10000 requests
+
+
+Server Software:        uvicorn
+Server Hostname:        localhost
+Server Port:            8882
+
+Document Path:          /
+Document Length:        77593 bytes
+
+Concurrency Level:      25
+Time taken for tests:   41.448 seconds
+Complete requests:      10000
+Failed requests:        0
+Total transferred:      777170000 bytes
+Total body sent:        734560000
+HTML transferred:       775930000 bytes
+Requests per second:    241.27 [#/sec] (mean)
+Time per request:       103.620 [ms] (mean)
+Time per request:       4.145 [ms] (mean, across all concurrent requests)
+Transfer rate:          18310.96 [Kbytes/sec] received
+                        17307.03 kb/s sent
+                        35617.99 kb/s total
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0   26 428.1      0   31423
+Processing:     5   18   7.5     16      80
+Waiting:        5   17   7.4     16      79
+Total:          5   44 428.1     16   31435
+
+Percentage of the requests served within a certain time (ms)
+  50%     16
+  66%     19
+  75%     22
+  80%     23
+  90%     28
+  95%     32
+  98%     49
+  99%   1029
+ 100%  31435 (longest request)

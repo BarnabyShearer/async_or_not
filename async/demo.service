@@ -1,0 +1,13 @@
+[Unit]
+Description=Demo asyncio service.
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu
+ExecStart=/usr/bin/python3 -m uvicorn app:app --host 0.0.0.0 --port 80 --no-access-log
+Environment=PGHOST=10.0.2.2
+Environment=PGPORT=5678
+Environment=PGUSER=postgres
+
+[Install]
+WantedBy=multi-user.target

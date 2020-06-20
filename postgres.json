@@ -1,0 +1,32 @@
+{
+  "builders": [
+    {
+      "iso_url": "output-ubuntu/packer-ubuntu",
+      "iso_checksum_type": "none",
+      "disk_image": true,
+      "use_backing_file": true,
+
+      "name": "postgresql",
+
+      "ssh_username": "ubuntu",
+      "ssh_password": "ubuntu",
+
+      "type": "qemu",
+      "headless": true,
+      "memory": 1024,
+
+      "shutdown_command": "echo ubuntu | sudo -S poweroff"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "echo ubuntu | sudo -S apt install -y postgresql",
+        "sudo -u postgres psql -c \"ALTER SYSTEM SET listen_addresses='*';\"",
+        "sudo -u postgres psql -c \"CREATE TABLE demo (id SERIAL PRIMARY KEY, data jsonb);\"",
+        "echo ubuntu | sudo -S sed -i '1i host  all     all     all     trust' /etc/postgresql/12/main/pg_hba.conf"
+      ]
+    }
+  ]
+}

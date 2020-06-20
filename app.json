@@ -1,0 +1,39 @@
+{
+  "variables": {
+    "service": ""
+  },
+  "builders": [
+    {
+      "iso_url": "output-ubuntu/packer-ubuntu",
+      "iso_checksum_type": "none",
+      "disk_image": true,
+      "use_backing_file": true,
+
+      "name": "{{ user `service`}}",
+
+      "ssh_username": "ubuntu",
+      "ssh_password": "ubuntu",
+
+      "type": "qemu",
+      "headless": true,
+      "memory": 1024,
+
+      "shutdown_command": "echo ubuntu | sudo -S poweroff"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "{{ user `service`}}/",
+      "destination": "/home/ubuntu/"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "echo ubuntu | sudo -S sed -i '1i net.ipv4.tcp_syncookies=0' /etc/sysctl.conf",
+        "echo ubuntu | sudo -S mv /home/ubuntu/demo.service /etc/systemd/system/",
+        "echo ubuntu | sudo -S systemctl enable demo"
+      ]
+    }
+  ]
+}
