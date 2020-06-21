@@ -18,6 +18,13 @@ output-async/packer-async: app.json async/* output-ubuntu/packer-ubuntu
 	-rm -Rf output-async
 	packer build -var "service=async" app.json
 
+golang/demo: golang/main.go
+	cd golang; go build .
+
+output-golang/packer-golang: app.json golang/* output-ubuntu/packer-ubuntu golang/demo
+	-rm -Rf output-golang
+	packer build -var "service=golang" app.json
+
 postgres: output-postgresql/packer-postgresql
 	qemu-system-x86_64 \
         -machine type=pc,accel=kvm \
@@ -45,10 +52,26 @@ async: output-async/packer-async
         -drive file=output-async/packer-async,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
         -vnc :2
 
+golang: output-golang/packer-golang
+	qemu-system-x86_64 \
+        -machine type=pc,accel=kvm \
+        -m 1024M \
+        -device virtio-net,netdev=user.0 \
+        -netdev user,id=user.0,hostfwd=tcp::8883-:80 \
+        -drive file=output-golang/packer-golang,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
+        -vnc :3
+
 benchmark:
 	ab -n 100 -c 25 -p payload.json http://localhost:8881/ > /dev/null
 	ab -n 100 -c 25 -p payload.json http://localhost:8882/ > /dev/null
+	ab -n 100 -c 25 -p payload.json http://localhost:8883/ > /dev/null
 	sleep 2
+	echo ======= SYNC =======
 	ab -n 10000 -c 25 -p payload.json http://localhost:8881/
 	sleep 2
+	echo ======= ASYNC =======
 	ab -n 10000 -c 25 -p payload.json http://localhost:8882/
+	sleep 2
+	echo ======= GOLANG =======
+	ab -n 10000 -c 25 -p payload.json http://localhost:8883/
+

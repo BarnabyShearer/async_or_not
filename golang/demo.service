@@ -1,0 +1,13 @@
+[Unit]
+Description=Demo golang service.
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu
+ExecStart=/home/ubuntu/demo
+Environment=PGHOST=10.0.2.2
+Environment=PGPORT=5678
+Environment=PGUSER=postgres
+
+[Install]
+WantedBy=multi-user.target

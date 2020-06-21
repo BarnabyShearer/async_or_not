@@ -1,3 +1,6 @@
+sleep 2
+echo ======= SYNC =======
+======= SYNC =======
 ab -n 10000 -c 25 -p payload.json http://localhost:8881/
 This is ApacheBench, Version 2.3 <$Revision: 1843412 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
@@ -56,6 +59,8 @@ Percentage of the requests served within a certain time (ms)
   99%   1062
  100%  64121 (longest request)
 sleep 2
+echo ======= ASYNC =======
+======= ASYNC =======
 ab -n 10000 -c 25 -p payload.json http://localhost:8882/
 This is ApacheBench, Version 2.3 <$Revision: 1843412 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
@@ -113,3 +118,63 @@ Percentage of the requests served within a certain time (ms)
   98%     49
   99%   1029
  100%  31435 (longest request)
+sleep 2
+echo ======= GOLANG =======
+======= GOLANG =======
+ab -n 10000 -c 25 -p payload.json http://localhost:8883/
+This is ApacheBench, Version 2.3 <$Revision: 1843412 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient)
+Completed 1000 requests
+Completed 2000 requests
+Completed 3000 requests
+Completed 4000 requests
+Completed 5000 requests
+Completed 6000 requests
+Completed 7000 requests
+Completed 8000 requests
+Completed 9000 requests
+Completed 10000 requests
+Finished 10000 requests
+
+
+Server Software:        
+Server Hostname:        localhost
+Server Port:            8883
+
+Document Path:          /
+Document Length:        77593 bytes
+
+Concurrency Level:      25
+Time taken for tests:   43.779 seconds
+Complete requests:      10000
+Failed requests:        0
+Total transferred:      776900000 bytes
+Total body sent:        734560000
+HTML transferred:       775930000 bytes
+Requests per second:    228.42 [#/sec] (mean)
+Time per request:       109.447 [ms] (mean)
+Time per request:       4.378 [ms] (mean, across all concurrent requests)
+Transfer rate:          17330.07 [Kbytes/sec] received
+                        16385.61 kb/s sent
+                        33715.68 kb/s total
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    7 361.2      0   31500
+Processing:     6   28   7.7     28      69
+Waiting:        2   15   6.7     15      66
+Total:          6   35 361.3     28   31532
+
+Percentage of the requests served within a certain time (ms)
+  50%     28
+  66%     31
+  75%     33
+  80%     34
+  90%     37
+  95%     41
+  98%     44
+  99%     48
+ 100%  31532 (longest request)
