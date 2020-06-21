@@ -19,4 +19,5 @@ Run (in seperate terminals):
     make sync
     make async
     make golang
+    make threading
     make benchmark

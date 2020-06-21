@@ -1,0 +1,13 @@
+[Unit]
+Description=Demo threading service.
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu
+ExecStart=/usr/bin/uwsgi --plugins http,python3 --module app:app --http :80 --disable-logging --workers 5 --enable-threads
+Environment=PGHOST=10.0.2.2
+Environment=PGPORT=5678
+Environment=PGUSER=postgres
+
+[Install]
+WantedBy=multi-user.target

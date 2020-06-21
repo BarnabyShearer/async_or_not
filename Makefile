@@ -25,6 +25,10 @@ output-golang/packer-golang: app.json golang/* output-ubuntu/packer-ubuntu golan
 	-rm -Rf output-golang
 	packer build -var "service=golang" app.json
 
+output-threading/packer-threading: app.json threading/* output-ubuntu/packer-ubuntu
+	-rm -Rf output-threading
+	packer build -var "service=threading" app.json
+
 postgres: output-postgresql/packer-postgresql
 	qemu-system-x86_64 \
         -machine type=pc,accel=kvm \
@@ -61,10 +65,20 @@ golang: output-golang/packer-golang
         -drive file=output-golang/packer-golang,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
         -vnc :3
 
+threading: output-threading/packer-threading
+	qemu-system-x86_64 \
+        -machine type=pc,accel=kvm \
+        -m 1024M \
+        -device virtio-net,netdev=user.0 \
+        -netdev user,id=user.0,hostfwd=tcp::8884-:80 \
+        -drive file=output-threading/packer-threading,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
+        -vnc :4
+
 benchmark:
 	ab -n 100 -c 25 -p payload.json http://localhost:8881/ > /dev/null
 	ab -n 100 -c 25 -p payload.json http://localhost:8882/ > /dev/null
 	ab -n 100 -c 25 -p payload.json http://localhost:8883/ > /dev/null
+	ab -n 100 -c 25 -p payload.json http://localhost:8884/ > /dev/null
 	sleep 2
 	echo ======= SYNC =======
 	ab -n 10000 -c 25 -p payload.json http://localhost:8881/
@@ -74,4 +88,7 @@ benchmark:
 	sleep 2
 	echo ======= GOLANG =======
 	ab -n 10000 -c 25 -p payload.json http://localhost:8883/
+	sleep 2
+	echo ======= THREADING =======
+	ab -n 10000 -c 25 -p payload.json http://localhost:8884/
 
