@@ -35,11 +35,11 @@ output-golang: golang/demo
         -drive file=output-$*/packer-$*,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
         -vnc :1 & echo $$! > .app.pid)
 	sleep 5
-    # Warm
+	# Warm
 	ab -n 100 -c 25 -p payload.json http://localhost:8880/ > /dev/null
 	sleep 2
 	@echo ======= $* =======
 	ab -n 10000 -c 25 -p payload.json http://localhost:8880/
-    # Cleanup
+	# Cleanup
 	kill `cat .app.pid`
 	kill `cat .postgres.pid`
