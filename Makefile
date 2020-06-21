@@ -1,94 +1,45 @@
-.PHONY: all sync async postgres benchmark
+.PRECIOUS: output-%
 
-all: output-postgresql/packer-postgresql output-sync/packer-sync output-async/packer-async
+output-%: %.json
+	-rm -Rf $@
+	packer build $+
 
-output-ubuntu/packer-ubuntu: ubuntu.json
-	-rm -Rf output-ubuntu
-	packer build ubuntu.json
+output-%: app.json %/* output-ubuntu
+	-rm -Rf $@
+	packer build -var "service=$*" app.json
 
-output-postgresql/packer-postgresql: postgres.json output-ubuntu/packer-ubuntu
-	-rm -Rf output-postgresql
-	packer build postgres.json
+%/demo: %/main.go
+	cd $*; go build .
 
-output-sync/packer-sync: app.json sync/* output-ubuntu/packer-ubuntu
-	-rm -Rf output-sync
-	packer build -var "service=sync" app.json
+output-golang: golang/demo
 
-output-async/packer-async: app.json async/* output-ubuntu/packer-ubuntu
-	-rm -Rf output-async
-	packer build -var "service=async" app.json
-
-golang/demo: golang/main.go
-	cd golang; go build .
-
-output-golang/packer-golang: app.json golang/* output-ubuntu/packer-ubuntu golang/demo
-	-rm -Rf output-golang
-	packer build -var "service=golang" app.json
-
-output-threading/packer-threading: app.json threading/* output-ubuntu/packer-ubuntu
-	-rm -Rf output-threading
-	packer build -var "service=threading" app.json
-
-postgres: output-postgresql/packer-postgresql
-	qemu-system-x86_64 \
+%: output-% output-postgresql
+	# Reset to empty DB
+	-rm output-postgresql/data
+	qemu-img create -f qcow2 -b packer-postgresql output-postgresql/data
+	# Run Postgres VM
+	(qemu-system-x86_64 \
         -machine type=pc,accel=kvm \
         -m 1024M \
         -device virtio-net,netdev=user.0 \
         -netdev user,id=user.0,hostfwd=tcp::5678-:5432 \
-        -drive file=output-postgresql/packer-postgresql,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
-        -vnc :0
-
-sync: output-sync/packer-sync
-	qemu-system-x86_64 \
+        -drive file=output-postgresql/data,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
+        -vnc :0 & echo $$! > .postgres.pid)
+	sleep 5
+	# Run App VM
+	(qemu-system-x86_64 \
         -machine type=pc,accel=kvm \
         -m 1024M \
         -device virtio-net,netdev=user.0 \
-        -netdev user,id=user.0,hostfwd=tcp::8881-:80 \
-        -drive file=output-sync/packer-sync,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
-        -vnc :1
-
-async: output-async/packer-async
-	qemu-system-x86_64 \
-        -machine type=pc,accel=kvm \
-        -m 1024M \
-        -device virtio-net,netdev=user.0 \
-        -netdev user,id=user.0,hostfwd=tcp::8882-:80 \
-        -drive file=output-async/packer-async,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
-        -vnc :2
-
-golang: output-golang/packer-golang
-	qemu-system-x86_64 \
-        -machine type=pc,accel=kvm \
-        -m 1024M \
-        -device virtio-net,netdev=user.0 \
-        -netdev user,id=user.0,hostfwd=tcp::8883-:80 \
-        -drive file=output-golang/packer-golang,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
-        -vnc :3
-
-threading: output-threading/packer-threading
-	qemu-system-x86_64 \
-        -machine type=pc,accel=kvm \
-        -m 1024M \
-        -device virtio-net,netdev=user.0 \
-        -netdev user,id=user.0,hostfwd=tcp::8884-:80 \
-        -drive file=output-threading/packer-threading,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
-        -vnc :4
-
-benchmark:
-	ab -n 100 -c 25 -p payload.json http://localhost:8881/ > /dev/null
-	ab -n 100 -c 25 -p payload.json http://localhost:8882/ > /dev/null
-	ab -n 100 -c 25 -p payload.json http://localhost:8883/ > /dev/null
-	ab -n 100 -c 25 -p payload.json http://localhost:8884/ > /dev/null
+        -netdev user,id=user.0,hostfwd=tcp::8880-:80 \
+        -drive file=output-$*/packer-$*,if=virtio,cache=writeback,discard=ignore,format=qcow2 \
+        -vnc :1 & echo $$! > .app.pid)
+	sleep 5
+    # Warm
+	ab -n 100 -c 25 -p payload.json http://localhost:8880/ > /dev/null
 	sleep 2
-	echo ======= SYNC =======
-	ab -n 10000 -c 25 -p payload.json http://localhost:8881/
-	sleep 2
-	echo ======= ASYNC =======
-	ab -n 10000 -c 25 -p payload.json http://localhost:8882/
-	sleep 2
-	echo ======= GOLANG =======
-	ab -n 10000 -c 25 -p payload.json http://localhost:8883/
-	sleep 2
-	echo ======= THREADING =======
-	ab -n 10000 -c 25 -p payload.json http://localhost:8884/
-
+	@echo ======= $* =======
+	ab -n 10000 -c 25 -p payload.json http://localhost:8880/
+    # Cleanup
+	kill `cat .app.pid`
+	kill `cat .postgres.pid`

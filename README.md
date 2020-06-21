@@ -13,11 +13,6 @@ Theory:
 - This is _NOT_ production code, no error handling nor anything else
   I didn't feel the need to benchmark.
 
-Run (in seperate terminals):
+Run:
 
-    make postgres
-    make sync
-    make async
-    make golang
-    make threading
-    make benchmark
+    make sync async golang threading
