@@ -5,7 +5,7 @@ from psycopg2.pool import SimpleConnectionPool
 
 CACHE = b"1234567890abcde" * 64 * 1024 * 256  # Assume each worker will have a 256MB cache
 POOL = None
-POOL_SIZE = 5
+POOL_SIZE = 1
 
 @contextmanager
 def get_conn():
